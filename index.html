@@ -4,301 +4,347 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wedding Invitation | Havya Sri & Sai Ganesh</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Aboreto&family=Cormorant+Upright:wght@400;500;600;700&family=Gotu&display=swap" rel="stylesheet">
+    
     <style>
-        /* CSS Settings & Smooth Scrolling */
+        /* --- PRO CSS ARCHITECTURE --- */
         :root {
-            --primary-color: #8E7A5E; /* Elegant Gold/Brown */
-            --bg-color: #FAFAFA;
-            --text-color: #333333;
+            --bg-dark: #111411; /* Deep moody background */
+            --bg-card: #1A1F1A;
+            --text-gold: #F3ECBA; /* Pale gold from the reference */
+            --text-muted: #A3A89F;
+            --accent-gold: #D4AF37;
         }
 
         html {
             scroll-behavior: smooth;
+            background-color: var(--bg-dark);
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Lato', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--bg-dark);
+            color: var(--text-gold);
+            font-family: 'Cormorant Upright', serif;
             overflow-x: hidden;
-        }
-
-        h1, h2, h3, .script-font {
-            font-family: 'Playfair Display', serif;
-            font-weight: normal;
-        }
-
-        /* Navigation */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(250, 250, 250, 0.95);
-            padding: 15px 0;
             text-align: center;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        nav a {
-            margin: 0 15px;
-            text-decoration: none;
-            color: var(--primary-color);
-            font-weight: bold;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-size: 14px;
+        /* Typography */
+        h1, h2, h3, .aboreto { font-family: 'Aboreto', sans-serif; font-weight: 400; }
+        .gotu { font-family: 'Gotu', sans-serif; }
+        
+        p { font-size: 1.2rem; line-height: 1.6; }
+        
+        .title-names {
+            font-size: clamp(3rem, 8vw, 6rem);
+            line-height: 1.1;
+            margin: 20px 0;
+            color: var(--text-gold);
+            text-transform: capitalize;
         }
 
-        /* Sections */
+        .ampersand {
+            font-size: clamp(2rem, 5vw, 4rem);
+            color: var(--accent-gold);
+            margin: -10px 0;
+        }
+
+        /* Floating Background Elements (Mimicking Lanterns/Stars) */
+        .particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background-image: radial-gradient(var(--accent-gold) 1px, transparent 1px);
+            background-size: 100px 100px;
+            opacity: 0.1;
+        }
+
+        /* Layout & Sections */
         section {
+            position: relative;
+            z-index: 1;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 80px 20px;
-            text-align: center;
+            padding: 60px 20px;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
-        .fade-in {
+        /* Scroll Animations */
+        .reveal {
             opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 1s ease-out, transform 1s ease-out;
+            transform: translateY(60px);
+            transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-
-        .fade-in.visible {
+        .reveal.active {
             opacity: 1;
             transform: translateY(0);
         }
 
-        /* Hero Section */
-        #home {
-            background: linear-gradient(rgba(250, 250, 250, 0.7), rgba(250, 250, 250, 0.9)), url('https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80') center/cover;
-        }
-
-        #home h1 {
-            font-size: 4rem;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-
-        #home p {
-            font-size: 1.2rem;
-            letter-spacing: 2px;
-        }
-
-        /* Couple Section */
-        .couple-container {
+        /* Arch Event Cards (Mimicking the reference UI) */
+        .cards-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 50px;
+            gap: 30px;
             margin-top: 40px;
         }
 
-        .person {
-            max-width: 300px;
-        }
-
-        .person h2 {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
-
-        .parents {
-            font-size: 0.9rem;
-            color: #666;
-            font-style: italic;
-        }
-
-        /* Events Section */
         .event-card {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin: 20px 0;
-            max-width: 500px;
-            width: 100%;
-            border-top: 4px solid var(--primary-color);
+            background-color: var(--bg-card);
+            border: 1px solid rgba(243, 236, 186, 0.2);
+            /* Signature Arch Shape */
+            border-radius: 150px 150px 20px 20px;
+            padding: 60px 30px 40px;
+            width: 300px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-gold);
+        }
+
+        .event-card h3 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--text-gold);
+        }
+
+        .event-card p {
+            font-size: 1.1rem;
+            margin: 5px 0;
+            color: var(--text-muted);
         }
 
         .map-btn {
             display: inline-block;
-            margin-top: 15px;
-            padding: 10px 20px;
-            background-color: var(--primary-color);
-            color: white;
+            margin-top: 20px;
+            padding: 10px 24px;
+            background: transparent;
+            color: var(--text-gold);
+            border: 1px solid var(--accent-gold);
+            border-radius: 50px;
             text-decoration: none;
-            border-radius: 25px;
+            font-family: 'Aboreto', sans-serif;
             font-size: 0.9rem;
-            transition: background 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
         }
 
         .map-btn:hover {
-            background-color: #6d5d47;
+            background: var(--text-gold);
+            color: var(--bg-dark);
         }
 
-        /* Live Section */
-        .video-container {
+        /* YouTube Live Section */
+        .live-container {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 30px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            border: 1px solid rgba(243, 236, 186, 0.2);
+        }
+
+        .video-wrapper {
             position: relative;
             padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
             height: 0;
-            overflow: hidden;
-            max-width: 800px;
-            width: 100%;
-            margin-top: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
-        .video-container iframe {
+        .video-wrapper iframe {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border: none;
         }
 
-        /* Music Player Toggle */
-        #music-toggle {
+        /* Floating Music Player Toggle */
+        .music-control {
             position: fixed;
             bottom: 30px;
             right: 30px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 50%;
             width: 60px;
             height: 60px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--accent-gold);
+            border-radius: 50%;
+            color: var(--text-gold);
             font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 1000;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: transform 0.3s;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease, background 0.3s;
         }
 
-        #music-toggle:hover {
+        .music-control:hover {
             transform: scale(1.1);
+            background-color: var(--text-gold);
+            color: var(--bg-dark);
         }
 
-        /* Responsive */
-        @media (max-width: 600px) {
-            #home h1 { font-size: 3rem; }
-            nav a { font-size: 12px; margin: 0 8px; }
+        .music-control.playing {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+        }
+
+        /* Scroll indicator */
+        .scroll-down {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            color: var(--accent-gold);
+            font-size: 1.5rem;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+            40% { transform: translateY(-20px) translateX(-50%); }
+            60% { transform: translateY(-10px) translateX(-50%); }
         }
     </style>
 </head>
 <body>
 
-    <audio id="bgMusic" loop>
+    <div class="particles"></div>
+
+    <audio id="bgMusic" loop preload="auto">
         <source src="bg-music.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
     </audio>
 
-    <button id="music-toggle" onclick="toggleMusic()">♫</button>
+    <div class="music-control" id="musicBtn" onclick="togglePlay()">
+        ▶
+    </div>
 
-    <nav>
-        <a href="#home">Home</a>
-        <a href="#couple">The Couple</a>
-        <a href="#events">Events</a>
-        <a href="#live">Live Stream</a>
-    </nav>
-
-    <section id="home">
-        <div class="fade-in">
-            <p>WE INVITE YOU TO CELEBRATE WITH US</p>
-            <h1>Havya Sri <br>&<br> Sai Ganesh</h1>
-            <p>August 15, 2026</p>
-        </div>
-    </section>
-
-    <section id="couple">
-        <div class="fade-in">
-            <p class="script-font" style="font-size: 2rem; color: var(--primary-color);">Meet the Couple</p>
-            <div class="couple-container">
-                <div class="person">
-                    <h2>Havya Sri</h2>
-                    <p class="parents">Daughter of<br>Gudipati Renuka Vara Prasad <br>& Lakshmi Kalpavalli</p>
-                </div>
-                <div class="person">
-                    <h2>Sai Ganesh</h2>
-                    <p class="parents">Son of<br>Nuka Srinivas <br>& Sangeetha</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="events" style="background-color: #f0f0f0;">
-        <div class="fade-in">
-            <h2 style="font-size: 2.5rem; color: var(--primary-color);">Events & Venues</h2>
+    <section>
+        <div class="reveal">
+            <p class="gotu" style="color: var(--accent-gold); font-size: 1rem; letter-spacing: 2px;">ॐ श्री गणेशाय नमः</p>
+            <br><br>
+            <p class="aboreto" style="letter-spacing: 4px; text-transform: uppercase; font-size: 0.9rem;">We invite you to celebrate with us</p>
             
-            <div class="event-card">
-                <h3>Wedding Ceremony</h3>
-                <p><strong>Date:</strong> August 15, 2026 | 9:00 AM</p>
-                <p><strong>Venue:</strong> Grand Palace Convention Hall</p>
-                <a href="https://maps.google.com" target="_blank" class="map-btn">Open in Google Maps</a>
-            </div>
+            <h1 class="title-names">Havya Sri</h1>
+            <div class="ampersand">&</div>
+            <h1 class="title-names">Sai Ganesh</h1>
+            
+            <br>
+            <div class="scroll-down">↓</div>
+        </div>
+    </section>
 
-            <div class="event-card">
-                <h3>Reception</h3>
-                <p><strong>Date:</strong> August 15, 2026 | 7:00 PM</p>
-                <p><strong>Venue:</strong> Royal Gardens</p>
-                <a href="https://maps.google.com" target="_blank" class="map-btn">Open in Google Maps</a>
+    <section>
+        <div class="reveal">
+            <h2 class="aboreto" style="font-size: 2.5rem; margin-bottom: 40px;">The Families</h2>
+            
+            <p style="font-size: 1.5rem; color: var(--accent-gold);">Bride's Parents</p>
+            <p style="font-size: 1.8rem; margin-bottom: 40px;">Gudipati Renuka Vara Prasad <br>& Lakshmi Kalpavalli</p>
+            
+            <p style="font-size: 1.5rem; color: var(--accent-gold);">Groom's Parents</p>
+            <p style="font-size: 1.8rem;">Nuka Srinivas <br>& Sangeetha</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="reveal">
+            <h2 class="aboreto" style="font-size: 2.5rem;">Events & Venues</h2>
+            
+            <div class="cards-container">
+                <div class="event-card">
+                    <h3 class="aboreto">Muhurtham</h3>
+                    <p style="color: var(--accent-gold); font-size: 1.3rem;">Thursday, 24th August</p>
+                    <p>9:00 AM Onwards</p>
+                    <p>Grand Palace Convention</p>
+                    <a href="https://maps.google.com" target="_blank" class="map-btn">See Route</a>
+                </div>
+
+                <div class="event-card">
+                    <h3 class="aboreto">Reception</h3>
+                    <p style="color: var(--accent-gold); font-size: 1.3rem;">Friday, 25th August</p>
+                    <p>7:00 PM Onwards</p>
+                    <p>Royal Gardens Estate</p>
+                    <a href="https://maps.google.com" target="_blank" class="map-btn">See Route</a>
+                </div>
             </div>
         </div>
     </section>
 
-    <section id="live">
-        <div class="fade-in" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
-            <h2 style="font-size: 2.5rem; color: var(--primary-color);">Join Us Virtually</h2>
-            <p>If you cannot make it in person, we would love for you to celebrate with us online.</p>
+    <section>
+        <div class="reveal" style="width: 100%;">
+            <h2 class="aboreto" style="font-size: 2.5rem;">Join Us Virtually</h2>
+            <p>If you cannot make it in person, please bless us by joining our live stream.</p>
             
-            <div class="video-container">
-                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Wedding Live Stream" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <div class="live-container">
+                <div class="video-wrapper">
+                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&rel=0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
             </div>
+        </div>
+    </section>
+
+    <section style="min-height: 50vh;">
+        <div class="reveal">
+            <h2 class="aboreto" style="font-size: 3rem; color: var(--accent-gold);">See you there</h2>
+            <p class="gotu" style="letter-spacing: 2px;">#HavyaWedsGanesh</p>
         </div>
     </section>
 
     <script>
-        // Music Toggle Logic
-        const music = document.getElementById("bgMusic");
-        const musicBtn = document.getElementById("music-toggle");
+        // 1. Intersection Observer for Smooth Scroll Reveals
+        const revealElements = document.querySelectorAll('.reveal');
+        
+        const revealOptions = {
+            threshold: 0.15,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) {
+                    return;
+                } else {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target); // Stop observing once revealed
+                }
+            });
+        }, revealOptions);
+
+        revealElements.forEach(el => revealOnScroll.observe(el));
+
+        // 2. Music Toggle Logic
+        const audio = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('musicBtn');
         let isPlaying = false;
 
-        function toggleMusic() {
+        function togglePlay() {
             if (isPlaying) {
-                music.pause();
-                musicBtn.innerHTML = "♫";
-                musicBtn.style.backgroundColor = "var(--primary-color)";
+                audio.pause();
+                musicBtn.innerHTML = '▶';
+                musicBtn.classList.remove('playing');
             } else {
-                music.play();
-                musicBtn.innerHTML = "⏸";
-                musicBtn.style.backgroundColor = "#6d5d47"; // Darker when playing
+                audio.play();
+                musicBtn.innerHTML = '॥'; // Pause symbol
+                musicBtn.classList.add('playing');
             }
             isPlaying = !isPlaying;
         }
-
-        // Smooth Fade-in on Scroll Logic (Intersection Observer)
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.fade-in').forEach((element) => {
-            observer.observe(element);
-        });
     </script>
 </body>
 </html>
