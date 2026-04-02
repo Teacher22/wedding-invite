@@ -249,7 +249,7 @@ function setupMusic() {
 function setupAutoScroll() {
   if (prefersReduced) return;
 
-  const PX_PER_SEC = 42;
+  const PX_PER_SEC = 80;
   let on = false;
   let raf = 0;
   let lastTs = 0;
