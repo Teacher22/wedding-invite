@@ -130,17 +130,65 @@ img { display: block; max-width: 100%; }
     0 0 0 2px rgba(255,255,255,0.2),
     0 8px 28px rgba(0,0,0,0.5);
 }
-/* shiny arm / center label */
-.disc-vinyl::before {
-  content: "♪";
-  position: absolute; inset: 0;
-  display: grid; place-items: center;
-  font-size: 18px;
-  color: var(--gold);
+.disc-btn[aria-pressed="false"] .disc-vinyl::before {
+  content: "▶";
+  font-size: 21px;
+  width: auto;
+  height: auto;
+  margin: 0;
+  background: none;
+  border-radius: 0;
+  color: var(--gold-light);
   text-shadow: 0 0 10px rgba(214,168,78,0.8);
 }
-.disc-vinyl::after {
+.disc-btn[aria-pressed="true"] .disc-vinyl::before {
   content: "";
+  width: 14px;
+  height: 14px;
+  background:
+    linear-gradient(
+      90deg,
+      var(--gold-light) 0 4px,
+      transparent 4px 10px,
+      var(--gold-light) 10px 14px
+    );
+  border-radius: 2px;
+  text-shadow: none;
+}
+.disc-btn[data-muted-lock="true"] .disc-vinyl::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  background:
+    linear-gradient(
+      90deg,
+      var(--gold-light) 0 4px,
+      transparent 4px 10px,
+      var(--gold-light) 10px 14px
+    );
+  border-radius: 2px;
+  text-shadow: none;
+}
+/* shiny arm / center label */
+.disc-vinyl::before {
+  content: "";
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  width: 14px;
+  height: 14px;
+  margin: auto;
+  background:
+    linear-gradient(
+      90deg,
+      var(--gold) 0 4px,
+      transparent 4px 10px,
+      var(--gold) 10px 14px
+    );
+  border-radius: 2px;
+  text-shadow: none;
+}
+.disc-vinyl::after {
+  content: none;
   position: absolute;
   top: 50%; left: 50%;
   width: 10px; height: 10px;

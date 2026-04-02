@@ -107,15 +107,22 @@ function setupMusic() {
   const btn   = document.getElementById("musicToggle");
   if (!audio || !btn) return;
 
+  audio.autoplay = true;
+  audio.playsInline = true;
+
   let on = false;
+  let userPaused = false;
+  let hasUserInteracted = false;
   let noteTimer = null;
   let retryTimer = null;
   const NOTES = ["♪", "♫", "♩", "♬"];
 
   /* ── render disc state ── */
   function render() {
+    const needsTapToUnmute = on && audio.muted;
     btn.setAttribute("aria-pressed", on ? "true" : "false");
-    btn.setAttribute("aria-label",   on ? "Pause music" : "Play music");
+    btn.setAttribute("data-muted-lock", needsTapToUnmute ? "true" : "false");
+    btn.setAttribute("aria-label", needsTapToUnmute ? "Tap to unmute music" : (on ? "Pause music" : "Play music"));
     if (on) startNotes(); else stopNotes();
   }
 
@@ -146,12 +153,27 @@ function setupMusic() {
   }
 
   /* ── play/pause ── */
-  async function tryPlay() {
+  async function tryPlay({ keepMuted = false } = {}) {
     try {
       audio.muted = true;
       await audio.play();
+      if (!keepMuted) {
+        audio.muted = false;
+        audio.volume = 1;
+      }
+      on = true;
+    } catch {
+      on = false;
+    }
+    render();
+    return on;
+  }
+
+  async function tryPlayFromGesture() {
+    try {
       audio.muted = false;
       audio.volume = 1;
+      await audio.play();
       on = true;
     } catch {
       on = false;
@@ -161,10 +183,14 @@ function setupMusic() {
   }
 
   btn.addEventListener("click", async () => {
+    hasUserInteracted = true;
     if (audio.paused) {
+      userPaused = false;
       try { await audio.play(); on = true; } catch { on = false; }
     } else {
-      audio.pause(); on = false;
+      userPaused = true;
+      audio.pause();
+      on = false;
     }
     render();
   });
@@ -172,7 +198,7 @@ function setupMusic() {
   function scheduleRetries() {
     clearInterval(retryTimer);
     retryTimer = setInterval(() => {
-      if (on) {
+      if (on || userPaused) {
         clearInterval(retryTimer);
         retryTimer = null;
         return;
@@ -181,23 +207,37 @@ function setupMusic() {
     }, 2000);
   }
 
-  /* ── autoplay: aggressive retries + user gesture unlock ── */
-  tryPlay().then((ok) => {
+  /* ── autoplay bootstrap: force muted first-play on initial load ── */
+  tryPlay({ keepMuted: true }).then((ok) => {
     if (!ok) scheduleRetries();
   });
+  setTimeout(() => { if (!on && !userPaused) tryPlay({ keepMuted: true }); }, 120);
+  setTimeout(() => { if (!on && !userPaused) tryPlay({ keepMuted: true }); }, 600);
 
-  const unlockEvents = ["pointerdown", "touchstart", "keydown", "scroll", "click", "focus"];
+  const unlockEvents = ["pointerdown", "touchstart", "keydown"];
   function unlock() {
-    if (!on) tryPlay();
+    hasUserInteracted = true;
+    if (!on && !userPaused) {
+      tryPlayFromGesture();
+    } else if (on && audio.muted && !userPaused) {
+      audio.muted = false;
+      audio.volume = 1;
+    }
   }
   unlockEvents.forEach((e) => {
     window.addEventListener(e, unlock, { passive: true });
   });
 
-  window.addEventListener("load", () => { if (!on) tryPlay(); }, { once: true });
-  window.addEventListener("pageshow", () => { if (!on) tryPlay(); });
+  window.addEventListener("load", () => { if (!on && !userPaused) tryPlay(); }, { once: true });
+  window.addEventListener("pageshow", () => { if (!on && !userPaused) tryPlay(); });
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && !on) tryPlay();
+    if (!document.hidden && !on && !userPaused) {
+      if (hasUserInteracted) {
+        tryPlayFromGesture();
+      } else {
+        tryPlay();
+      }
+    }
   });
   window.addEventListener("beforeunload", () => clearInterval(retryTimer), { once: true });
 }
@@ -210,13 +250,12 @@ function setupAutoScroll() {
   if (prefersReduced) return;
 
   const PX_PER_SEC = 42;
-  let on = true;
+  let on = false;
   let raf = 0;
   let lastTs = 0;
   let resumeTimer = 0;
   let speedFactor = 0;
-  let isInteracting = false;
-  let userPausedUntil = 0;
+  let isTouchHolding = false;
 
   function atBottom() {
     return window.scrollY >= document.documentElement.scrollHeight - window.innerHeight - 4;
@@ -249,7 +288,7 @@ function setupAutoScroll() {
       return;
     }
 
-    if (Date.now() < userPausedUntil || isInteracting) {
+    if (isTouchHolding) {
       raf = requestAnimationFrame(loop);
       return;
     }
@@ -259,28 +298,42 @@ function setupAutoScroll() {
     raf = requestAnimationFrame(loop);
   }
 
-  function pause(extraMs = 0) {
+  function pause() {
     on = false;
-    isInteracting = true;
-    userPausedUntil = Date.now() + extraMs;
     stopRaf();
-    clearTimeout(resumeTimer);
-    resumeTimer = setTimeout(() => {
-      isInteracting = false;
-      if (!atBottom()) {
-        start();
-      }
-    }, 4500);
   }
 
-  on = false;
   start();
 
-  window.addEventListener("wheel", () => pause(4000), { passive: true });
-  window.addEventListener("touchstart", () => pause(4500), { passive: true });
-  window.addEventListener("touchmove", () => pause(4500), { passive: true });
-  window.addEventListener("keydown", () => pause(5000));
-  window.addEventListener("pointerdown", () => pause(5000), { passive: true });
+  function pauseThenResume(ms = 700) {
+    pause();
+    clearTimeout(resumeTimer);
+    resumeTimer = setTimeout(() => {
+      if (!isTouchHolding && !atBottom()) start();
+    }, ms);
+  }
+
+  window.addEventListener("wheel", () => pauseThenResume(900), { passive: true });
+  window.addEventListener("keydown", () => pauseThenResume(1200));
+
+  window.addEventListener("touchstart", () => {
+    isTouchHolding = true;
+    pause();
+  }, { passive: true });
+  window.addEventListener("touchmove", () => {
+    isTouchHolding = true;
+    pause();
+  }, { passive: true });
+  window.addEventListener("touchend", () => {
+    isTouchHolding = false;
+    clearTimeout(resumeTimer);
+    if (!atBottom()) start();
+  }, { passive: true });
+  window.addEventListener("touchcancel", () => {
+    isTouchHolding = false;
+    clearTimeout(resumeTimer);
+    if (!atBottom()) start();
+  }, { passive: true });
 
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
@@ -288,8 +341,7 @@ function setupAutoScroll() {
       clearTimeout(resumeTimer);
       stopRaf();
     } else if (!atBottom()) {
-      isInteracting = false;
-      start();
+      if (!isTouchHolding) start();
     }
   });
   window.addEventListener("beforeunload", () => {
