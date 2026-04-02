@@ -1,157 +1,200 @@
-const TO_EMAIL = "you@example.com";
+/* ─────────────────────────────────────────────
+   UTILS
+───────────────────────────────────────────── */
+function pad2(n) { return String(n).padStart(2, "0"); }
 
-function pad2(n) {
-  return String(n).padStart(2, "0");
-}
+const prefersReduced =
+  window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function setupMusic() {
-  const audio = document.getElementById("bgMusic");
-  const btn = document.getElementById("musicToggle");
-  const text = document.getElementById("musicText");
-  if (!audio || !btn) return;
+/* ─────────────────────────────────────────────
+   PARALLAX
+   Each element with [data-parallax] gets a
+   translateY offset proportional to scroll.
+───────────────────────────────────────────── */
+function setupParallax() {
+  if (prefersReduced) return;
 
-  let isOn = true;
+  const layers = [
+    // hero layers
+    { el: document.querySelector(".hero__sky"),     speed: 0.12 },
+    { el: document.querySelector(".hero__gopuram"), speed: 0.18 },
+    // section bgs
+    ...Array.from(document.querySelectorAll(".section__bg[data-parallax]")).map(el => ({
+      el,
+      speed: parseFloat(el.getAttribute("data-parallax")) || 0.12,
+    })),
+  ].filter(l => l.el);
 
-  function render() {
-    btn.setAttribute("aria-pressed", isOn ? "true" : "false");
-    if (text) text.textContent = isOn ? "Music: On" : "Music: Off";
-  }
+  let ticking = false;
 
-  async function tryPlay() {
-    try {
-      await audio.play();
-      isOn = true;
-      render();
-    } catch {
-      // Autoplay may be blocked; user gesture will unlock.
-      isOn = false;
-      render();
+  function apply() {
+    const scrollY = window.scrollY;
+
+    for (const layer of layers) {
+      const parent = layer.el.closest("section, .hero");
+      if (!parent) continue;
+      const rect = parent.getBoundingClientRect();
+      if (rect.bottom <= 0 || rect.top >= window.innerHeight) continue;
+      const shift = scrollY * layer.speed;
+      layer.el.style.transform = `translateY(${shift.toFixed(2)}px)`;
     }
+    ticking = false;
   }
 
-  btn.addEventListener("click", async () => {
-    if (audio.paused) {
-      try {
-        await audio.play();
-        isOn = true;
-      } catch {
-        isOn = false;
-      }
-    } else {
-      audio.pause();
-      isOn = false;
-    }
-    render();
-  });
+  window.addEventListener("scroll", () => {
+    if (!ticking) { window.requestAnimationFrame(apply); ticking = true; }
+  }, { passive: true });
 
-  // Best effort autoplay on load
-  tryPlay();
-
-  // One-time fallback: first user gesture attempts to start music.
-  const unlock = async () => {
-    if (!isOn) await tryPlay();
-    window.removeEventListener("pointerdown", unlock);
-    window.removeEventListener("keydown", unlock);
-  };
-  window.addEventListener("pointerdown", unlock, { once: true });
-  window.addEventListener("keydown", unlock, { once: true });
+  apply();
 }
 
-function startCountdown() {
-  const root = document.querySelector("[data-countdown]");
-  if (!root) return;
-
-  const dateAttr = root.getAttribute("data-date");
-  const target = dateAttr ? new Date(dateAttr) : null;
-  if (!target || Number.isNaN(target.getTime())) return;
-
-  const daysEl = root.querySelector("[data-days]");
-  const hoursEl = root.querySelector("[data-hours]");
-  const minutesEl = root.querySelector("[data-minutes]");
-  const secondsEl = root.querySelector("[data-seconds]");
-
-  function tick() {
-    const now = new Date();
-    const diff = Math.max(0, target.getTime() - now.getTime());
-
-    const totalSeconds = Math.floor(diff / 1000);
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds % 86400) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    if (daysEl) daysEl.textContent = pad2(days);
-    if (hoursEl) hoursEl.textContent = pad2(hours);
-    if (minutesEl) minutesEl.textContent = pad2(minutes);
-    if (secondsEl) secondsEl.textContent = pad2(seconds);
-  }
-
-  tick();
-  window.setInterval(tick, 1000);
-}
-
-function setupDotsObserver() {
-  const dots = document.querySelectorAll(".dots__dot[data-dot]");
-  if (!dots.length) return;
-
-  const byId = new Map();
-  for (const dot of dots) byId.set(dot.getAttribute("data-dot"), dot);
-
-  const sections = [
-    document.querySelector(".scene--hero"),
-    document.querySelector("#story"),
-    document.querySelector("#countdown"),
-    document.querySelector("#events"),
-    document.querySelector("#rsvp"),
-  ].filter(Boolean);
+/* ─────────────────────────────────────────────
+   SCROLL REVEAL
+───────────────────────────────────────────── */
+function setupReveal() {
+  const els = document.querySelectorAll(".reveal");
+  if (!els.length) return;
 
   const obs = new IntersectionObserver(
     (entries) => {
-      let best = null;
       for (const e of entries) {
-        if (!e.isIntersecting) continue;
-        if (!best || e.intersectionRatio > best.intersectionRatio) best = e;
+        if (e.isIntersecting) {
+          e.target.classList.add("revealed");
+          obs.unobserve(e.target);
+        }
       }
-      if (!best) return;
-
-      const id =
-        best.target.id ||
-        (best.target.classList.contains("scene--hero") ? "home" : "");
-      if (!id) return;
-
-      for (const dot of dots) dot.removeAttribute("aria-current");
-      const active = byId.get(id);
-      if (active) active.setAttribute("aria-current", "true");
     },
-    { threshold: [0.35, 0.5, 0.65] }
+    { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
   );
 
-  for (const s of sections) obs.observe(s);
+  for (const el of els) obs.observe(el);
 }
 
-function setupWishForm() {
-  const form = document.getElementById("wishForm");
-  if (!form) return;
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const fd = new FormData(form);
-    const name = String(fd.get("name") || "").trim();
-    const message = String(fd.get("message") || "").trim();
-    if (!name || !message) return;
+/* ─────────────────────────────────────────────
+   COUNTDOWN TIMER
+───────────────────────────────────────────── */
+function setupCountdown() {
+  const root = document.querySelector("[data-countdown]");
+  if (!root) return;
 
-    const subject = encodeURIComponent(`Wedding wishes from ${name}`);
-    const body = encodeURIComponent(`${message}\n\n— ${name}`);
+  const target = new Date(root.getAttribute("data-date"));
+  if (isNaN(target)) return;
 
-    // GitHub Pages-friendly: no backend needed.
-    window.location.href = `mailto:${encodeURIComponent(
-      TO_EMAIL
-    )}?subject=${subject}&body=${body}`;
+  const dEl = root.querySelector("[data-days]");
+  const hEl = root.querySelector("[data-hours]");
+  const mEl = root.querySelector("[data-minutes]");
+  const sEl = root.querySelector("[data-seconds]");
+
+  function tick() {
+    const diff = Math.max(0, target - Date.now());
+    const total = Math.floor(diff / 1000);
+    if (dEl) dEl.textContent = pad2(Math.floor(total / 86400));
+    if (hEl) hEl.textContent = pad2(Math.floor((total % 86400) / 3600));
+    if (mEl) mEl.textContent = pad2(Math.floor((total % 3600) / 60));
+    if (sEl) sEl.textContent = pad2(total % 60);
+  }
+
+  tick();
+  setInterval(tick, 1000);
+}
+
+/* ─────────────────────────────────────────────
+   MUSIC — spinning disc toggle
+───────────────────────────────────────────── */
+function setupMusic() {
+  const audio = document.getElementById("bgMusic");
+  const btn   = document.getElementById("musicToggle");
+  if (!audio || !btn) return;
+
+  let on = true;
+
+  function render() {
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.setAttribute("aria-label", on ? "Pause music" : "Play music");
+  }
+
+  async function tryPlay() {
+    try { await audio.play(); on = true; }
+    catch { on = false; }
+    render();
+  }
+
+  btn.addEventListener("click", async () => {
+    if (audio.paused) { try { await audio.play(); on = true; } catch { on = false; } }
+    else              { audio.pause(); on = false; }
+    render();
   });
+
+  tryPlay();
+
+  // Unlock autoplay on first gesture (mobile)
+  window.addEventListener("pointerdown", async () => {
+    if (!on) await tryPlay();
+  }, { once: true });
 }
 
-setupMusic();
-startCountdown();
-setupDotsObserver();
-setupWishForm();
+/* ─────────────────────────────────────────────
+   AUTO-SCROLL — always on, user can interrupt
+   by scrolling/touching, resumes after 3 s
+───────────────────────────────────────────── */
+function setupAutoScroll() {
+  if (prefersReduced) return;
 
+  const PX_PER_SEC = 38;
+  let on = true;
+  let raf = 0;
+  let lastTs = 0;
+  let resumeTimer = 0;
+
+  function atBottom() {
+    return window.scrollY >= document.documentElement.scrollHeight - window.innerHeight - 4;
+  }
+
+  function loop(ts) {
+    if (!on) return;
+    if (!lastTs) lastTs = ts;
+    const dt = Math.min(0.06, (ts - lastTs) / 1000);
+    lastTs = ts;
+    if (atBottom()) { on = false; return; }
+    window.scrollBy(0, PX_PER_SEC * dt);
+    raf = requestAnimationFrame(loop);
+  }
+
+  function pause() {
+    if (!on) return;
+    on = false;
+    clearTimeout(resumeTimer);
+    // auto-resume after 3 seconds of inactivity
+    resumeTimer = setTimeout(() => {
+      if (!atBottom()) {
+        on = true; lastTs = 0;
+        raf = requestAnimationFrame(loop);
+      }
+    }, 3000);
+  }
+
+  raf = requestAnimationFrame(loop);
+
+  window.addEventListener("wheel",       pause, { passive: true });
+  window.addEventListener("touchstart",  pause, { passive: true });
+  window.addEventListener("keydown",     pause);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { on = false; clearTimeout(resumeTimer); }
+    else if (!atBottom()) { on = true; lastTs = 0; raf = requestAnimationFrame(loop); }
+  });
+  window.addEventListener("beforeunload", () => cancelAnimationFrame(raf));
+}
+
+/* ─────────────────────────────────────────────
+   TOPBAR SCROLL TINT
+───────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   INIT
+───────────────────────────────────────────── */
+setupParallax();
+setupReveal();
+setupCountdown();
+setupMusic();
+setupAutoScroll();
