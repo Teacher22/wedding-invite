@@ -100,38 +100,106 @@ function setupCountdown() {
 }
 
 /* ─────────────────────────────────────────────
-   MUSIC — spinning disc toggle
+   MUSIC — spinning disc + floating notes
 ───────────────────────────────────────────── */
 function setupMusic() {
   const audio = document.getElementById("bgMusic");
   const btn   = document.getElementById("musicToggle");
   if (!audio || !btn) return;
 
-  let on = true;
+  let on = false;
+  let noteTimer = null;
+  let retryTimer = null;
+  const NOTES = ["♪", "♫", "♩", "♬"];
 
+  /* ── render disc state ── */
   function render() {
     btn.setAttribute("aria-pressed", on ? "true" : "false");
-    btn.setAttribute("aria-label", on ? "Pause music" : "Play music");
+    btn.setAttribute("aria-label",   on ? "Pause music" : "Play music");
+    if (on) startNotes(); else stopNotes();
   }
 
+  /* ── floating note spawner ── */
+  function spawnNote() {
+    const note = document.createElement("span");
+    note.className = "music-note";
+    note.textContent = NOTES[Math.floor(Math.random() * NOTES.length)];
+    const nx  = (Math.random() * 40 - 20).toFixed(1) + "px";
+    const nr  = (Math.random() * 30 - 15).toFixed(1) + "deg";
+    const nr2 = (Math.random() * 50 - 25).toFixed(1) + "deg";
+    note.style.setProperty("--nx",  nx);
+    note.style.setProperty("--nr",  nr);
+    note.style.setProperty("--nr2", nr2);
+    note.style.fontSize = (13 + Math.random() * 8).toFixed(0) + "px";
+    document.body.appendChild(note);
+    note.addEventListener("animationend", () => note.remove());
+  }
+
+  function startNotes() {
+    stopNotes();
+    spawnNote();
+    noteTimer = setInterval(spawnNote, 700);
+  }
+  function stopNotes() {
+    clearInterval(noteTimer);
+    noteTimer = null;
+  }
+
+  /* ── play/pause ── */
   async function tryPlay() {
-    try { await audio.play(); on = true; }
-    catch { on = false; }
+    try {
+      audio.muted = true;
+      await audio.play();
+      audio.muted = false;
+      audio.volume = 1;
+      on = true;
+    } catch {
+      on = false;
+    }
     render();
+    return on;
   }
 
   btn.addEventListener("click", async () => {
-    if (audio.paused) { try { await audio.play(); on = true; } catch { on = false; } }
-    else              { audio.pause(); on = false; }
+    if (audio.paused) {
+      try { await audio.play(); on = true; } catch { on = false; }
+    } else {
+      audio.pause(); on = false;
+    }
     render();
   });
 
-  tryPlay();
+  function scheduleRetries() {
+    clearInterval(retryTimer);
+    retryTimer = setInterval(() => {
+      if (on) {
+        clearInterval(retryTimer);
+        retryTimer = null;
+        return;
+      }
+      tryPlay();
+    }, 2000);
+  }
 
-  // Unlock autoplay on first gesture (mobile)
-  window.addEventListener("pointerdown", async () => {
-    if (!on) await tryPlay();
-  }, { once: true });
+  /* ── autoplay: aggressive retries + user gesture unlock ── */
+  tryPlay().then((ok) => {
+    if (!ok) scheduleRetries();
+  });
+
+  const unlockEvents = ["pointerdown", "touchstart", "keydown", "scroll", "click", "focus"];
+  function unlock() {
+    if (!on) tryPlay();
+  }
+  unlockEvents.forEach((e) => {
+    window.addEventListener(e, unlock, { passive: true });
+  });
+
+  window.addEventListener("load", () => { if (!on) tryPlay(); }, { once: true });
+  window.addEventListener("pageshow", () => { if (!on) tryPlay(); });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && !on) tryPlay();
+  });
+  window.addEventListener("beforeunload", () => clearInterval(retryTimer), { once: true });
 }
 
 /* ─────────────────────────────────────────────
@@ -141,14 +209,33 @@ function setupMusic() {
 function setupAutoScroll() {
   if (prefersReduced) return;
 
-  const PX_PER_SEC = 38;
+  const PX_PER_SEC = 42;
   let on = true;
   let raf = 0;
   let lastTs = 0;
   let resumeTimer = 0;
+  let speedFactor = 0;
+  let isInteracting = false;
+  let userPausedUntil = 0;
 
   function atBottom() {
     return window.scrollY >= document.documentElement.scrollHeight - window.innerHeight - 4;
+  }
+
+  function stopRaf() {
+    if (raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
+  }
+
+  function start() {
+    if (on || atBottom()) return;
+    on = true;
+    lastTs = 0;
+    speedFactor = 0;
+    stopRaf();
+    raf = requestAnimationFrame(loop);
   }
 
   function loop(ts) {
@@ -156,35 +243,91 @@ function setupAutoScroll() {
     if (!lastTs) lastTs = ts;
     const dt = Math.min(0.06, (ts - lastTs) / 1000);
     lastTs = ts;
-    if (atBottom()) { on = false; return; }
-    window.scrollBy(0, PX_PER_SEC * dt);
+    if (atBottom()) {
+      on = false;
+      stopRaf();
+      return;
+    }
+
+    if (Date.now() < userPausedUntil || isInteracting) {
+      raf = requestAnimationFrame(loop);
+      return;
+    }
+
+    speedFactor = Math.min(1, speedFactor + dt * 0.5);
+    window.scrollBy(0, PX_PER_SEC * speedFactor * dt);
     raf = requestAnimationFrame(loop);
   }
 
-  function pause() {
-    if (!on) return;
+  function pause(extraMs = 0) {
     on = false;
+    isInteracting = true;
+    userPausedUntil = Date.now() + extraMs;
+    stopRaf();
     clearTimeout(resumeTimer);
-    // auto-resume after 3 seconds of inactivity
     resumeTimer = setTimeout(() => {
+      isInteracting = false;
       if (!atBottom()) {
-        on = true; lastTs = 0;
-        raf = requestAnimationFrame(loop);
+        start();
       }
-    }, 3000);
+    }, 4500);
   }
 
-  raf = requestAnimationFrame(loop);
+  on = false;
+  start();
 
-  window.addEventListener("wheel",       pause, { passive: true });
-  window.addEventListener("touchstart",  pause, { passive: true });
-  window.addEventListener("keydown",     pause);
+  window.addEventListener("wheel", () => pause(4000), { passive: true });
+  window.addEventListener("touchstart", () => pause(4500), { passive: true });
+  window.addEventListener("touchmove", () => pause(4500), { passive: true });
+  window.addEventListener("keydown", () => pause(5000));
+  window.addEventListener("pointerdown", () => pause(5000), { passive: true });
 
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) { on = false; clearTimeout(resumeTimer); }
-    else if (!atBottom()) { on = true; lastTs = 0; raf = requestAnimationFrame(loop); }
+    if (document.hidden) {
+      on = false;
+      clearTimeout(resumeTimer);
+      stopRaf();
+    } else if (!atBottom()) {
+      isInteracting = false;
+      start();
+    }
   });
-  window.addEventListener("beforeunload", () => cancelAnimationFrame(raf));
+  window.addEventListener("beforeunload", () => {
+    clearTimeout(resumeTimer);
+    stopRaf();
+  });
+}
+
+/* ─────────────────────────────────────────────
+   FLOWER RAIN (HERO)
+───────────────────────────────────────────── */
+function setupFlowerRain() {
+  if (prefersReduced) return;
+
+  const root = document.getElementById("flowerRain");
+  if (!root) return;
+
+  const PETALS = ["✿", "❀", "❁"];
+  let timer = null;
+
+  function spawnPetal() {
+    const petal = document.createElement("span");
+    petal.className = "flower-petal";
+    petal.textContent = PETALS[Math.floor(Math.random() * PETALS.length)];
+    petal.style.setProperty("--x", `${(Math.random() * 100).toFixed(2)}%`);
+    petal.style.setProperty("--drift", `${(Math.random() * 90 - 45).toFixed(1)}px`);
+    petal.style.setProperty("--rot", `${(Math.random() * 500 - 250).toFixed(1)}deg`);
+    petal.style.setProperty("--dur", `${(7 + Math.random() * 6).toFixed(2)}s`);
+    petal.style.setProperty("--delay", `${(Math.random() * 0.8).toFixed(2)}s`);
+    petal.style.fontSize = `${(12 + Math.random() * 14).toFixed(0)}px`;
+    root.appendChild(petal);
+    petal.addEventListener("animationend", () => petal.remove(), { once: true });
+  }
+
+  for (let i = 0; i < 12; i += 1) spawnPetal();
+  timer = setInterval(spawnPetal, 520);
+
+  window.addEventListener("beforeunload", () => clearInterval(timer), { once: true });
 }
 
 /* ─────────────────────────────────────────────
@@ -198,3 +341,4 @@ setupReveal();
 setupCountdown();
 setupMusic();
 setupAutoScroll();
+setupFlowerRain();
