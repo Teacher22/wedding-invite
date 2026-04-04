@@ -8,7 +8,7 @@
     <meta name="description" content="శుభ వివాహం — Sai Ganesh weds Havya Sri. May 2026. A Telugu wedding celebration." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Great+Vibes&family=Jost:wght@300;400;500&family=Noto+Serif+Telugu:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Great+Vibes&family=Jost:wght@300;400;500&family=Noto+Serif+Devanagari:wght@400;600;700&family=Noto+Serif+Telugu:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -58,9 +58,17 @@
           </h1>
 
           <p class="hero__date reveal reveal--delay-3">
-            🎺 &nbsp; May 2026 · Join us in celebration &nbsp; 🥁
+            ॐ &nbsp; May 2026 · Join us in celebration &nbsp; ॐ
           </p>
         </div>
+
+        <a href="#story" class="hero__scroll reveal reveal--delay-4" id="heroScrollBtn">
+          <span class="hero__scroll-stack" aria-hidden="true">
+            <span class="hero__scroll-chevron"></span>
+            <span class="hero__scroll-chevron"></span>
+          </span>
+          <span class="hero__scroll-label">Scroll</span>
+        </a>
       </section>
 
       <!-- ══════════════════════════════════════
@@ -124,17 +132,14 @@
           <div class="divider reveal reveal--delay-1">
             <span class="divider__om">ॐ</span>
           </div>
-          <p class="section-lead reveal reveal--delay-2">
-            Join us across all ceremonies. Tap a card to open the location.
-          </p>
 
           <div class="events-grid">
-            <article class="event-card reveal reveal--delay-1">
+            <article class="event-card reveal reveal--delay-1" data-event="sangeeth">
               <div class="event-card__icon" aria-hidden="true">🎺</div>
               <h3 class="event-card__title">Sangeeth</h3>
               <p class="event-card__meta">Thursday, 1 May 2026</p>
               <p class="event-card__time">6:30 PM onwards</p>
-              <p class="event-card__venue">Venue name</p>
+              <p class="event-card__venue">Grand Vijayawada by GRT Hotels</p>
               <a class="event-card__map"
                  href="https://maps.app.goo.gl/EkwoVhs6xG2NGenN9?g_st=ic"
                  target="_blank" rel="noreferrer">
@@ -142,12 +147,12 @@
               </a>
             </article>
 
-            <article class="event-card reveal reveal--delay-2">
-              <div class="event-card__icon" aria-hidden="true">🥁</div>
+            <article class="event-card reveal reveal--delay-2" data-event="wedding">
+              <div class="event-card__icon event-card__icon--auspicious" aria-hidden="true" title="Auspicious">ॐ</div>
               <h3 class="event-card__title">Wedding &amp; Reception</h3>
               <p class="event-card__meta">Saturday, 3 May 2026</p>
               <p class="event-card__time">Reception 7:30 PM · Muhurtham 12:21 AM</p>
-              <p class="event-card__venue">Venue name</p>
+              <p class="event-card__venue">S S Convention Hall</p>
               <a class="event-card__map"
                  href="https://maps.app.goo.gl/8HYc9bjtts19R8fo6?g_st=ic"
                  target="_blank" rel="noreferrer">
@@ -155,12 +160,12 @@
               </a>
             </article>
 
-            <article class="event-card reveal reveal--delay-3">
-              <div class="event-card__icon" aria-hidden="true">🪘</div>
+            <article class="event-card reveal reveal--delay-3" data-event="vratham">
+              <div class="event-card__icon event-card__icon--auspicious" aria-hidden="true" title="Flowers">❀</div>
               <h3 class="event-card__title">Vratham &amp; Reception</h3>
               <p class="event-card__meta">Monday, 5 May 2026</p>
               <p class="event-card__time">Vratham 7:20 AM · Reception 10:00 AM</p>
-              <p class="event-card__venue">Venue name</p>
+              <p class="event-card__venue">Hotel Centre Side</p>
               <a class="event-card__map"
                  href="https://maps.app.goo.gl/n8UwsourRvxn2MBS8?g_st=ic"
                  target="_blank" rel="noreferrer">
@@ -168,6 +173,23 @@
               </a>
             </article>
           </div>
+
+          <aside
+            class="live-placeholder reveal reveal--delay-1"
+            aria-label="Live stream — coming on event days"
+          >
+            <div class="live-placeholder__inner">
+              <span class="live-placeholder__badge">
+                <span class="live-placeholder__dot" aria-hidden="true"></span>
+                Live
+              </span>
+              <h3 class="live-placeholder__title">Watch the celebrations live</h3>
+              <p class="live-placeholder__text">
+                Can’t be there in person? We’ll share a stream on each event day — check this page again when the day
+                arrives. The link goes live when the ceremonies do.
+              </p>
+            </div>
+          </aside>
         </div>
       </section>
 

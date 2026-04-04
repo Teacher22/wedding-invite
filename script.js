@@ -275,6 +275,63 @@ function setupFlowerRain() {
 }
 
 /* ─────────────────────────────────────────────
+   SCROLL NUDGE — if user hasn’t scrolled after 2s,
+   gently peek down & back (replaces old auto-scroll).
+───────────────────────────────────────────── */
+function setupScrollNudge() {
+  if (prefersReduced) return;
+
+  const DELAY_MS = 2000;
+  const DURATION_MS = 700;
+
+  let userMoved = false;
+  let nudgeActive = false;
+
+  function markUser() {
+    if (nudgeActive) return;
+    userMoved = true;
+  }
+
+  window.addEventListener("wheel", markUser, { passive: true });
+  window.addEventListener("keydown", (e) => {
+    if (["ArrowDown", "ArrowUp", "PageDown", "PageUp", " ", "Home", "End"].includes(e.key)) markUser();
+  }, { passive: true });
+  window.addEventListener("scroll", () => {
+    if (nudgeActive) return;
+    if (window.scrollY > 4) userMoved = true;
+  }, { passive: true });
+
+  function easeOutIn(t) {
+    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  }
+
+  function animateScroll(from, to, durationMs, done) {
+    const t0 = performance.now();
+    function frame(now) {
+      const u = Math.min(1, (now - t0) / durationMs);
+      const y = from + (to - from) * easeOutIn(u);
+      window.scrollTo(0, y);
+      if (u < 1) requestAnimationFrame(frame);
+      else done();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  window.setTimeout(() => {
+    if (userMoved || window.scrollY > 4) return;
+
+    const dist = Math.min(120, Math.max(72, Math.floor(window.innerHeight * 0.11)));
+    nudgeActive = true;
+
+    animateScroll(0, dist, DURATION_MS, () => {
+      animateScroll(dist, 0, DURATION_MS, () => {
+        nudgeActive = false;
+      });
+    });
+  }, DELAY_MS);
+}
+
+/* ─────────────────────────────────────────────
    TOPBAR SCROLL TINT
 ───────────────────────────────────────────── */
 /* ─────────────────────────────────────────────
@@ -285,3 +342,4 @@ setupReveal();
 setupCountdown();
 setupMusic();
 setupFlowerRain();
+setupScrollNudge();

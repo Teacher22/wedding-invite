@@ -428,6 +428,83 @@ img { display: block; max-width: 100%; }
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
 }
 
+/* Scroll hint — bottom of hero */
+.hero__scroll {
+  position: absolute;
+  bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(214, 168, 78, 0.38);
+  background: rgba(8, 6, 14, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: var(--f-ui);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  transition: border-color 0.25s, color 0.25s, box-shadow 0.25s, transform 0.25s;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+.hero__scroll:hover {
+  border-color: rgba(214, 168, 78, 0.65);
+  color: var(--gold-light);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  transform: translateX(-50%) translateY(-2px);
+}
+.hero__scroll:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+.hero__scroll-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  animation: heroScrollBounce 2.2s ease-in-out infinite;
+}
+.hero__scroll-chevron {
+  display: block;
+  width: 9px;
+  height: 9px;
+  margin: -2px 0;
+  border-right: 2px solid var(--gold);
+  border-bottom: 2px solid var(--gold);
+  transform: rotate(45deg);
+  opacity: 0.95;
+  filter: drop-shadow(0 0 6px rgba(214, 168, 78, 0.4));
+}
+.hero__scroll-chevron:last-of-type {
+  opacity: 0.65;
+  margin-top: -5px;
+}
+@keyframes heroScrollBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(7px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero__scroll-stack {
+    animation: none;
+  }
+}
+.hero__scroll-label {
+  margin-top: 2px;
+}
+
 /* ─────────────────────────────────────────────
    BUTTONS
 ───────────────────────────────────────────── */
@@ -692,6 +769,90 @@ img { display: block; max-width: 100%; }
   background: linear-gradient(180deg, rgba(4,22,20,0.58), rgba(4,22,20,0.75));
 }
 
+/* ── Live stream placeholder (Events) ── */
+.live-placeholder {
+  margin: 36px auto 8px;
+  max-width: 640px;
+  position: relative;
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  background: linear-gradient(
+    125deg,
+    rgba(214, 168, 78, 0.55),
+    rgba(214, 168, 78, 0.12),
+    rgba(61, 214, 198, 0.15),
+    rgba(214, 168, 78, 0.35)
+  );
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+.live-placeholder__inner {
+  border-radius: calc(var(--radius-sm) - 2px);
+  padding: 22px 22px 18px;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, rgba(214, 168, 78, 0.12), transparent 55%),
+    rgba(8, 18, 16, 0.92);
+  text-align: center;
+}
+.live-placeholder__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(214, 168, 78, 0.4);
+  background: rgba(0, 0, 0, 0.35);
+}
+.live-placeholder__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f04e4e;
+  box-shadow: 0 0 12px rgba(240, 78, 78, 0.85);
+  animation: liveDotPulse 2s ease-in-out infinite;
+}
+@keyframes liveDotPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-placeholder__dot {
+    animation: none;
+    opacity: 0.85;
+  }
+}
+.live-placeholder__title {
+  margin-top: 16px;
+  font-family: var(--f-display);
+  font-size: clamp(1.25rem, 2.8vw, 1.55rem);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--cream);
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+}
+.live-placeholder__text {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.78);
+  max-width: 46ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .events-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -725,6 +886,18 @@ img { display: block; max-width: 100%; }
 
 .event-card__icon {
   font-size: 28px; margin-bottom: 14px; line-height: 1;
+}
+/* Wedding: Om · Vratham: flowers — not instruments */
+.event-card__icon--auspicious {
+  font-size: clamp(30px, 4vw, 36px);
+  color: rgba(214, 168, 78, 0.95);
+  text-shadow: 0 0 24px rgba(214, 168, 78, 0.22);
+  font-family: "Noto Serif Devanagari", "Noto Serif Telugu", "Cormorant Garamond", serif;
+}
+.event-card[data-event="vratham"] .event-card__icon--auspicious {
+  font-family: inherit;
+  color: rgba(255, 232, 210, 0.95);
+  filter: drop-shadow(0 0 12px rgba(255, 210, 180, 0.45));
 }
 .event-card__title {
   font-family: var(--f-display);
@@ -835,6 +1008,7 @@ img { display: block; max-width: 100%; }
 .reveal--delay-1 { transition-delay: 0.12s; }
 .reveal--delay-2 { transition-delay: 0.24s; }
 .reveal--delay-3 { transition-delay: 0.38s; }
+.reveal--delay-4 { transition-delay: 0.52s; }
 
 /* ─────────────────────────────────────────────
    RESPONSIVE
@@ -853,6 +1027,8 @@ img { display: block; max-width: 100%; }
   .hero__title .weds { gap: 10px; }
   .hero__date { letter-spacing: 0.18em; }
   .events-grid  { grid-template-columns: 1fr; }
+  .live-placeholder { margin: 28px 0 4px; }
+  .live-placeholder__inner { padding: 18px 16px 14px; }
   .timer        { grid-template-columns: repeat(2, 1fr); }
   .hero__gopuram { inset: -10% 0; }
 }
